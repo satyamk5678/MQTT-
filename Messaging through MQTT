@@ -1,0 +1,45 @@
+public class ControlCenter {
+
+    public static void main(String[] args) {
+
+        // 1. create the client
+
+        final Mqtt5Client client = Mqtt5Client.builder()
+
+                .identifier("controlcenter-" + getMacAddress()) // use a unique identifier
+
+                .serverHost("broker.hivemq.com") // use the public HiveMQ broker
+
+                .automaticReconnectWithDefaultConfig() // the client automatically reconnects
+
+                .build();
+
+        // 2. connect the client
+
+        client.toBlocking().connectWith()
+
+                .cleanStart(false)
+
+                .sessionExpiryInterval(TimeUnit.HOURS.toSeconds(1)) // buffer messages
+
+                .send();
+
+        // 3. subscribe and consume messages
+
+        client.toAsync().subscribeWith()
+
+                .topicFilter("home/#")
+
+                .callback(publish -> {
+
+                    System.out.println("Received message on topic " + publish.getTopic() + ": " +
+
+                            new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8));
+
+                })
+
+                .send();
+
+    }
+
+}
