@@ -1,0 +1,39 @@
+public class Sensor {
+
+    public static void main(String[] args) throws InterruptedException
+
+        final Mqtt5Client client = Mqtt5Client.builder()
+
+                .identifier("sensor-" + getMacAddress()) 
+
+                .serverHost("broker.hivemq.com") 
+
+                .automaticReconnectWithDefaultConfig()  reconnects
+
+                .build();
+
+        // 2. connect the client
+
+        client.toBlocking().connectWith()
+
+                .willPublish()
+
+                    .topic("home/will")
+
+                    .payload("sensor gone".getBytes())
+
+                    .applyWillPublish()
+
+                .send();
+
+        // 3. simulate periodic publishing of sensor data
+
+        while (true) {
+
+            client.toBlocking().publishWith()
+
+                    .topic("home/brightness")
+
+                    .payload(getBrightness())
+
+                    .send();
